@@ -15,6 +15,11 @@ gem 'uglifier'
 
 gem 'jquery-rails'
 
+#wikistance
+
+gem 'mechanize'
+gem 'ancestry'
+
 # Use unicorn as the web server
 # gem 'unicorn'
 
