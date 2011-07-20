@@ -20,6 +20,11 @@ gem 'jquery-rails'
 gem 'mechanize'
 gem 'ancestry'
 
+gem 'rspec'
+gem 'rspec-rails'
+gem 'webmock'
+gem 'vcr'
+
 # Use unicorn as the web server
 # gem 'unicorn'
 
