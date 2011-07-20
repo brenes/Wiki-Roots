@@ -10,8 +10,12 @@ describe WikiPage do
   it "should trace its own path" do
 
     VCR.use_cassette('wikipages') do
-      page = WikiPage.create :url => 'http://en.wikipedia.org/wiki/List_of_characters_on_Scrubs'
+
+
+  WebMock.allow_net_connect!(:net_http_connect_on_start => true)
+      page = WikiPage.create :title => 'List of characters on Scrubs'
       path = page.trace      
+      puts path.pages.map(&:title)
     end
 
   end

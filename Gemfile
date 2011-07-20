@@ -18,6 +18,7 @@ gem 'jquery-rails'
 #wikistance
 
 gem 'mechanize'
+gem 'wikipedia-client'
 gem 'ancestry'
 
 gem 'rspec'
