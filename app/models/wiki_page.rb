@@ -20,8 +20,8 @@ class WikiPage < ActiveRecord::Base
       
       path.pages << page
           
-      # We must get rid of infoboxes and metadata before we get the link title
-      first_link_title = wikipage.content.gsub("\n", "").gsub(/\{\{[^\}]*\}\}/, "").match(/\[\[[^\]]*\]\]/)[0]
+      # We must get rid of infoboxes, metadata and Image and FIle links before we get the link title
+      first_link_title = wikipage.content.gsub("\n", "").gsub(/\{\{[^\}]*\}\}/, "").gsub("[[Image:", "").gsub("[[File:", "").match(/\[\[[^\]]*\]\]/)[0]
       first_link_title = first_link_title.split("|").first.gsub("]", "").gsub("[", "") unless first_link_title.nil?
 
 
