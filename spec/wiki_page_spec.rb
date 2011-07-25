@@ -11,7 +11,7 @@ describe WikiPage do
 
     VCR.use_cassette('wikipages') do
 
-      WebMock.allow_net_connect!(:net_http_connect_on_start => true)
+      WebMock.disable_net_connect!(:net_http_connect_on_start => true)
 
       page = WikiPage.create! :title => 'List of characters on Scrubs'
       path = page.trace      
@@ -25,11 +25,30 @@ describe WikiPage do
     # If we follow it it will crush
     VCR.use_cassette('wikipages') do
 
-      WebMock.allow_net_connect!(:net_http_connect_on_start => true)
+      WebMock.disable_net_connect!(:net_http_connect_on_start => true)
 
       page = WikiPage.create! :title => 'American English'
       lambda {  page.trace }.should_not raise_error(NoMethodError)
 
+    end
+
+  end
+
+  it "should mark the last pages as roots" do
+
+    root_pages = ["old persian cuneiform script", "cuneiform"]
+
+    VCR.use_cassette('wikipages') do
+
+      WebMock.disable_net_connect!(:net_http_connect_on_start => true)
+
+      page = WikiPage.create! :title => 'American English'
+      page.trace
+
+      root_pages.each do |root_title|
+        page = WikiPage.find_by_title(root_title)
+        assert !(page.blank?) && page.is_root
+      end
     end
 
   end

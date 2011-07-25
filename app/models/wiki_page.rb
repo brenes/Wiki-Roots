@@ -3,6 +3,11 @@ require 'wikipedia'
 class WikiPage < ActiveRecord::Base
   has_ancestry
 
+  before_save :title_to_downcase
+
+  def title_to_downcase
+    title.downcase
+  end
 
 
   # For tracing we must search for the end of the road or a loop
@@ -23,7 +28,6 @@ class WikiPage < ActiveRecord::Base
       # We must get rid of infoboxes, metadata and Image and FIle links before we get the link title
       first_link_title = wikipage.content.gsub("\n", "").gsub(/\{\{[^\}]*\}\}/, "").gsub("[[Image:", "").gsub("[[File:", "").match(/\[\[[^\]]*\]\]/)[0]
       first_link_title = first_link_title.split("|").first.gsub("]", "").gsub("[", "") unless first_link_title.nil?
-
 
       if first_link_title.nil?
         page.update_attributes :is_root => true
