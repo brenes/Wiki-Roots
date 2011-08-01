@@ -3,7 +3,7 @@ require 'wikipedia'
 class WikiPage < ActiveRecord::Base
   has_ancestry
 
-  belongs_to :wiki_tree
+  belongs_to :tree, :class_name => "WikiTree"
 
   before_save :title_to_downcase
 
