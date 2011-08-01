@@ -3,6 +3,8 @@ require 'wikipedia'
 class WikiPage < ActiveRecord::Base
   has_ancestry
 
+  belongs_to :wiki_tree
+
   before_save :title_to_downcase
 
   def title_to_downcase
