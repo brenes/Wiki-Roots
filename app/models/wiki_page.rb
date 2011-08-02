@@ -62,7 +62,7 @@ class WikiPage < ActiveRecord::Base
           roots = path.pages.slice! parent_pos, path.pages.length - parent_pos
 
           # create a tree
-
+          tree = WikiTree.create :name => roots.map(&:title).join(" - ")
           # we remove the parent page to every root and indicate it's a root
           roots.each do |root|
             root.update_attributes :is_root => true, :parent_id => nil
@@ -71,6 +71,11 @@ class WikiPage < ActiveRecord::Base
         end
 
       end
+    end
+
+    path.pages.each do |page|
+      tree.pages << page
+      page.reload
     end
 
     path
