@@ -7,6 +7,8 @@ class WikiPage < ActiveRecord::Base
 
   before_save :title_to_downcase
 
+  scope :roots, where("is_root")
+
   def title_to_downcase
     title.downcase
   end
