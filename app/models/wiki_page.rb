@@ -21,6 +21,8 @@ class WikiPage < ActiveRecord::Base
 
     wikipage = Wikipedia.find(title)
 
+    page.update_attributes :fetched_at => Time.now
+
     # If page has a parent we must stop (we can fetch the cached path or it's a loop)
     # If there's no page... we reached the end of the road
     while !page.blank? and page.parent_id.blank? 
@@ -41,8 +43,8 @@ class WikiPage < ActiveRecord::Base
         parent_page = WikiPage.find_by_title(first_link_title)
         parent_page ||= WikiPage.create :url => "", :title => first_link_title, :fetched_at => Time.now
 
-        page.update_attributes :parent_id => parent_page.id
-
+        page.parent = parent_page
+        page.save
 
         page = parent_page        
       end
@@ -63,19 +65,23 @@ class WikiPage < ActiveRecord::Base
 
           # create a tree
           tree = WikiTree.create :name => roots.map(&:title).join(" - ")
+
+          path.pages.each do |page|
+            page.wiki_tree_id = tree.id
+            page.save!
+          end
+          
           # we remove the parent page to every root and indicate it's a root
-          roots.each do |root|
-            root.update_attributes :is_root => true, :parent_id => nil
+          roots.reverse.each do |root|
+            root.wiki_tree_id = tree.id
+            root.is_root = true
+            root.parent_id = nil
+            root.save
           end
 
         end
 
       end
-    end
-
-    path.pages.each do |page|
-      tree.pages << page
-      page.reload
     end
 
     path
