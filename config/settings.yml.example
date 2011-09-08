@@ -1,0 +1,11 @@
+defaults: &defaults
+  wikipedia_domain: http://en.wikipedia.org/wiki/
+
+development:
+  <<: *defaults
+
+production:
+  <<: *defaults
+
+test:
+  <<: *defaults

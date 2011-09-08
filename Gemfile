@@ -20,14 +20,15 @@ gem 'jquery-rails'
 
 #wikistance
 
-gem 'mechanize'
 gem 'wikipedia-client'
 gem 'ancestry'
 
-gem 'rspec'
-gem 'rspec-rails'
-gem 'webmock'
-gem 'vcr'
+group :test do
+  gem 'rspec'
+  gem 'rspec-rails'
+  gem 'webmock'
+  gem 'vcr'
+end
 
 # Use unicorn as the web server
 # gem 'unicorn'
