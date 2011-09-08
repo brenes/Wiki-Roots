@@ -1,0 +1,7 @@
+<li><%= link_to(page.title, url_to_wikipedia(page.title)) %>
+  <% unless page.children.blank? %>
+  <ul>
+    <%= render :partial => "page", :collection => page.children %>
+  </ul>
+  <% end %>
+</li>

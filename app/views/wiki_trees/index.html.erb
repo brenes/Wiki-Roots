@@ -1,0 +1,3 @@
+<% @wiki_trees.each do |tree|%>
+<li><%= link_to tree.name, wiki_tree_path(tree.id) %></li>
+<% end %>

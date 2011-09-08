@@ -1,0 +1,7 @@
+<h2><%=@wiki_tree.name%></h2>
+
+<h3>Páginas</h3>
+
+<ul>
+  <%= render :partial => "page", :collection => @wiki_tree.roots %>
+</ul>
