@@ -24,9 +24,13 @@ describe WikiPage do
 
       VCR.use_cassette('wikipages', :record => :new_episodes) do
         
+
+        assert_equal WikiPage.count, 0
+
         page = WikiPage.create! :title => 'List of characters on Scrubs'
         path = page.trace      
         assert WikiTree.count == 1
+
         assert_equal WikiTree.first.pages.count, path.pages.count
         assert_equal WikiTree.first.roots.count, path.pages.select{|p| p.is_root}.count
 
@@ -93,6 +97,52 @@ describe WikiPage do
       end
 
     end
+  end
+
+  describe "when tracing two pages" do
+   
+     it "should only create a tree if they share the tree" do
+
+      VCR.use_cassette('wikipages', :record => :new_episodes) do
+        
+        page = WikiPage.create! :title => 'Cheers'
+        first_path = page.trace
+
+        assert_equal WikiTree.count, 1
+
+        page = WikiPage.create! :title => 'Frasier'
+        second_path = page.trace
+
+        first_path.pages.select{|p| p.is_root}.each do |page|
+          assert second_path.pages.include?(page), "Some root on the first path is not in the second path (and they should share roots). If this tests is failing we should search for another example on pages sharing roots"
+        end
+        
+        assert_equal WikiTree.count, 1, "A Tree has been created when tracing the second page (and it shouldn't)"
+      end
+
+    end
+
+    it "should only create a tree if they share the root" do
+
+      VCR.use_cassette('wikipages', :record => :new_episodes) do
+        
+        page = WikiPage.create! :title => 'Cheers'
+        first_path = page.trace
+
+        assert_equal WikiTree.count, 1
+
+        page = WikiPage.create! :title => 'Oviedo'
+        second_path = page.trace
+
+        first_path.pages.select{|p| p.is_root}.each do |page|
+          assert second_path.pages.include?(page), "Some root on the first path is not in the second path (and they should share roots). If this tests is failing we should search for another example on pages sharing roots"
+        end
+        
+        assert_equal WikiTree.count, 1, "A Tree has been created when tracing the second page (and it shouldn't)"
+      end
+
+    end
+
   end
 
 end

@@ -21,13 +21,15 @@ class WikiPage < ActiveRecord::Base
     
     page = self
 
+    tree = nil
+
     wikipage = Wikipedia.find(title)
 
     page.update_attributes :fetched_at => Time.now
 
-    # If page has a parent we must stop (we can fetch the cached path or it's a loop)
+    # If page has a parent or is root we must stop (we can fetch the cached path or it's a loop)
     # If there's no page... we reached the end of the road
-    while !page.blank? and page.parent_id.blank? 
+    while page.parent_id.blank? and !page.is_root
       
       path.pages << page
           
@@ -35,15 +37,15 @@ class WikiPage < ActiveRecord::Base
       first_link_title = wikipage.content.gsub("\n", "").gsub(%r{(?<re>\{\{(?:(?> [^\{\}]+ )|\g<re>)*\}\})}x, "").gsub("[[wikt:", "").gsub("[[Image:", "").gsub("[[File:", "").match(/\[\[[^\]]*\]\]/)[0]
       first_link_title = first_link_title.split("|").first.gsub("]", "").gsub("[", "") unless first_link_title.nil?
 
+
       if first_link_title.nil?
         page.update_attributes :is_root => true
         page = nil
       else
-
         wikipage = Wikipedia.find(first_link_title)
 
         parent_page = WikiPage.find_by_title(first_link_title)
-        parent_page ||= WikiPage.create :url => "", :title => first_link_title, :fetched_at => Time.now
+        parent_page ||= WikiPage.create :url => "", :title => first_link_title, :fetched_at => Time.now, :is_root => false
 
         page.parent = parent_page
         page.save
@@ -52,39 +54,49 @@ class WikiPage < ActiveRecord::Base
       end
     end
 
-    unless page.blank?
-      path.pages << page
-      unless page.parent_id.blank?
-        
-        parent_pos = path.pages.index page.parent
-        # If parent is not in the path then we have a cached path
-        if parent_pos.nil?
-          path.pages.concat(page.ancestors.reverse)
-        else # If parent is in the path then we have a loop
+    parent_pos = path.pages.index(page.parent) unless page.parent.nil?
 
-          # remove pages from path
-          roots = path.pages.slice! parent_pos, path.pages.length - parent_pos
+    # If parent is not in the path then we have a cached path
+    # and the current tree is parent's tree
+    if !page.parent.nil? and parent_pos.nil?
+   
+      path.pages.concat(page.ancestors.reverse)
+ 
+      # I don't understand why page.tree does not work :S
+      tree =  WikiTree.find(page.parent.wiki_tree_id)
 
-          # create a tree
-          tree = WikiTree.create :name => roots.map(&:title).join(" - ")
+      path.pages.concat(tree.roots).uniq!
+    elsif page.is_root
+      
+      # I don't understand why page.tree does not work :S
+      tree =  WikiTree.find(page.wiki_tree_id.inspect)
+      # If page is a root then we should add all the other roots to the path and 
+      # the current tree is the root's tree
+      path.pages.concat(tree.roots).uniq!
 
-          path.pages.each do |page|
-            page.wiki_tree_id = tree.id
-            page.save!
-          end
-          
-          # we remove the parent page to every root and indicate it's a root
-          roots.reverse.each do |root|
-            root.wiki_tree_id = tree.id
-            root.is_root = true
-            root.parent_id = nil
-            root.save
-          end
+    else
+      # If parent is in the path then we have a loop
+      # we must get the roots 
+      roots = path.pages.slice parent_pos-1, path.pages.length - (parent_pos - 1)
 
-        end
-
+      # create a tree
+      tree = WikiTree.create :name => roots.map(&:title).join(" - ")      
+      # remove the parent page to every root and indicate it's a root
+      roots.reverse.each do |root|
+        root.is_root = true
+        root.parent_id = nil
+        root.save!
       end
+
     end
+
+
+    # and now we assign every page to the tree
+    path.pages.each do |page|
+      page.wiki_tree_id = tree.id
+      page.save!
+    end
+
 
     path
 
