@@ -32,11 +32,16 @@ class WikiPage < ActiveRecord::Base
     while page.parent_id.blank? and !page.is_root
       
       path.pages << page
-          
-      # We must get rid of infoboxes, metadata and Image and FIle links before we get the link title
-      first_link_title = wikipage.content.gsub("\n", "").gsub(%r{(?<re>\{\{(?:(?> [^\{\}]+ )|\g<re>)*\}\})}x, "").gsub("[[wikt:", "").gsub("[[Image:", "").gsub("[[File:", "").match(/\[\[[^\]]*\]\]/)[0]
-      first_link_title = first_link_title.split("|").first.gsub("]", "").gsub("[", "") unless first_link_title.nil?
 
+      first_link_title = wikipage.content
+      first_link_title.gsub!("\n", "")
+      # We must get rid of infoboxes, metadata and Image and FIle links before we get the link title
+      first_link_title.gsub!(%r{(?<re>\{\{(?:(?> [^\{\}]+ )|\g<re>)*\}\})}x, "")
+
+      # We get the whole [[ ... ]] fragments even when they have recursive [[...]] blocks 
+      # and then must get the first which doesn't point to a File, Image...
+      first_link_title = first_link_title.scan(%r{(?<re>\[\[(?:(?> [^\[\]]+ )|\g<re>)*\]\])}x).flatten.detect{|m| !m.match(/^\[\[[^\]\|].*:/)}
+      first_link_title = first_link_title.split("|").first.gsub("]", "").gsub("[", "") unless first_link_title.nil?
 
       if first_link_title.nil?
         page.update_attributes :is_root => true
