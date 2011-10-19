@@ -1,9 +1,9 @@
 source 'http://rubygems.org'
 
-gem 'rails', '3.1.0.rc5'
+gem 'rails', '3.1.0.rc8'
 
 # https://github.com/rails/arel/issues/72
-gem 'arel', '2.1.4' 
+gem 'arel', '~> 2.2.1' 
 
 # Bundle edge Rails instead:
 # gem 'rails',     :git => 'git://github.com/rails/rails.git'
