@@ -81,9 +81,23 @@ describe WikiPage do
 
     end
 
-    it "should mark the last pages as roots" do
+    it "should not follow the links inside images" do
 
-      root_pages = ["Greek Language", "Indo-European languages", "language family", "language", "Cuneiform", "writing system", "Hanzi", "Han Chinese", "ethnic group", "group (sociology)", "social sciences", "field of study", "knowledge"]
+      # 'Classics' has a link to Homero in an image (Bust of Homero)
+      # at the beginning of the article which must not be detected as 
+      # the first link on the wikipedia page
+      VCR.use_cassette('wikipages', :record => :new_episodes) do
+
+        page = WikiPage.create! :title => 'Classics'
+        path = page.trace 
+        assert_not_equal path.pages[1].title, "Homer"
+
+      end
+
+    end
+
+    it "should mark the last pages as roots" do
+      root_pages = ["Indo-European languages", "language family", "language", "human", "taxonomy", "science", "knowledge", "fact", "Latin", "Italic language"]
 
       VCR.use_cassette('wikipages', :record => :new_episodes) do
 
