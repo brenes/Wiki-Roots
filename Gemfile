@@ -24,6 +24,7 @@ gem 'wikipedia-client'
 gem 'ancestry'
 
 group :test do
+  gem 'spork'
   gem 'rspec'
   gem 'rspec-rails'
   gem 'webmock'
